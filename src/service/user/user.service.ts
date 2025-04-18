@@ -9,8 +9,6 @@ export class UserService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<IUser>,
   ) {}
-
-
   async getProfile(user: { userId: string; email: string }) {
     return this.userModel.findById(user.userId).select('-password');
   }
