@@ -14,6 +14,8 @@ import { AuthController } from './controller/auth/auth.controller';
 import { UserController } from './controller/user/user.controller';
 import { UserService } from './service/user/user.service';
 import { kidsSchema } from './schema/kids.schema';
+import { KidsController } from './controller/kids/kids.controller';
+import { KidsService } from './service/kids/kids.service';
 
 @Module({
   imports: [
@@ -25,7 +27,7 @@ import { kidsSchema } from './schema/kids.schema';
       signOptions: { expiresIn: '1d' },
     }),
   ],
-  controllers: [AppController , AuthController ,UserController],
-  providers: [AppService, AuthService , JwtStrategy , JwtAuthGuard , UserService],
+  controllers: [AppController , AuthController ,UserController , KidsController],
+  providers: [AppService, AuthService , JwtStrategy , JwtAuthGuard , UserService , KidsService],
 })
 export class AppModule {}

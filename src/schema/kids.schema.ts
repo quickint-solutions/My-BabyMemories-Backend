@@ -1,25 +1,24 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { User } from "./user.schema"
-import mongoose, { Document } from "mongoose"
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
 export enum Gender {
-    MALE = "MALE",
-    FEMALE = "FEMALE"
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
 }
 
-@Schema()
+@Schema({timestamps:true})
 export class Kids extends Document {
-    @Prop({ required: true })
-    name: string
+  @Prop({ required: true })
+  name: string;
 
-    @Prop({ required: true })
-    dob: Date
+  @Prop({
+    required: true,
+    set: (val: Date | string | number) => new Date(val).getTime(),
+  })
+  dob: number;
 
-    @Prop({ required: true, enum: Gender })
-    gender: Gender
-
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-    parent_user: mongoose.Types.ObjectId;
-
+  @Prop({ required: true, enum: Gender })
+  gender: Gender;
 }
-export const kidsSchema = SchemaFactory.createForClass(Kids)
+
+export const kidsSchema = SchemaFactory.createForClass(Kids);

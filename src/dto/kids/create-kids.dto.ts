@@ -1,7 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { Gender } from 'src/schema/kids.schema';
-import { CreateUserDto } from '../user/create-user.dto';
 
 export class KidDto {
   @IsString()
@@ -9,14 +7,10 @@ export class KidDto {
   name: string;
 
   @IsNotEmpty()
-  @Type(() => Date) // ✅ Converts string to Date
-  @IsDate()         // ✅ Validates it's a real Date
-  dob: Date;
+  @IsNumber()
+  dob: number;
 
   @IsEnum(Gender)
   @IsNotEmpty()
   readonly gender: Gender;
-
-  @Type(() => CreateUserDto)
-  readonly parent_user?: CreateUserDto;
 }
