@@ -3,8 +3,8 @@ import { Response } from 'express'
 import { FacebookAuthGuard } from 'src/auth/facebook-auth.guard'
 import { GoogleAuthGuard } from 'src/auth/google-auth.guard'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
-import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/dto/user/create-user.dto'
-import { AuthService } from 'src/service/auth/auth.service'
+import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/user/dto/create-user.dto'
+import { AuthService } from 'src/auth/auth.service'
 
 @Controller('auth')
 export class AuthController {

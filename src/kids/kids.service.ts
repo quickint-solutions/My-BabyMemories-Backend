@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Kids } from 'src/schema/kids.schema';
-import { KidDto } from "src/dto/kids/create-kids.dto"
+import { KidDto } from "src/kids/dto/create-kids.dto"
 
 @Injectable()
 export class KidsService {

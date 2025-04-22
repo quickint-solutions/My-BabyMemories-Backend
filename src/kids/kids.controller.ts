@@ -7,8 +7,8 @@ import {
     Put,
     Delete,
   } from '@nestjs/common';
-  import { KidsService } from 'src/service/kids/kids.service';
-  import { KidDto } from 'src/dto/kids/create-kids.dto';
+  import { KidsService } from 'src/kids/kids.service';
+  import { KidDto } from 'src/kids/dto/create-kids.dto';
   
   @Controller('kids')
   export class KidsController {
