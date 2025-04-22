@@ -69,6 +69,53 @@ export class AuthService {
     return { token }
   }
 
+  // Inside AuthService
+
+  async validateOAuthLogin({
+    email,
+    firstName,
+    lastName,
+    provider,
+    providerId
+  }: {
+    email: string
+    firstName: string
+    lastName: string
+    provider: string
+    providerId: string
+  }) {
+    let user = await this.userModel.findOne({ email })
+
+    if (!user) {
+      user = new this.userModel({
+        email,
+        firstName,
+        lastName,
+        password: null,
+        provider,
+        providerId
+      })
+
+      try {
+        await user.save()
+        console.log('User saved successfully')
+      } catch (err) {
+        console.error('Error saving user:', err)
+      }
+    } else {
+      console.log('User already exists:', user.email)
+    }
+
+    const token = this.jwtService.sign({
+      id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName
+    })
+
+    return { token, user }
+  }
+
   async updatePassword(user: { userId: string; email: string }, dto: UpdatePasswordDto): Promise<any> {
     try {
       const { current_password, new_password } = dto

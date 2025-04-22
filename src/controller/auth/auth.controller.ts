@@ -1,5 +1,7 @@
-import { Body, Controller, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { Response } from 'express'
+import { FacebookAuthGuard } from 'src/auth/facebook-auth.guard'
+import { GoogleAuthGuard } from 'src/auth/google-auth.guard'
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
 import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/dto/user/create-user.dto'
 import { AuthService } from 'src/service/auth/auth.service'
@@ -33,6 +35,35 @@ export class AuthController {
         message: error.message || 'Login failed'
       })
     }
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth() {}
+
+  @Get('google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    const { token } = req.user
+    return res.status(HttpStatus.OK).json({
+      message: 'Google login successful',
+      token
+    })
+  }
+
+  // Facebook Authentication
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  async facebookAuth() {}
+
+  @Get('facebook/redirect')
+  @UseGuards(FacebookAuthGuard)
+  async facebookAuthRedirect(@Req() req, @Res() res: Response) {
+    const { token } = req.user
+    return res.status(HttpStatus.OK).json({
+      message: 'Facebook login successful',
+      token
+    })
   }
   @UseGuards(JwtAuthGuard)
   @Post('update-password')
