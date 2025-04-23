@@ -4,9 +4,10 @@ import {
     Req,
     UseGuards,
   } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-  import { UserService } from 'src/user/user.service';
+
 import { AuthenticatedRequest } from 'src/types/express-request';
+import { UserService } from './user.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
   
   @Controller('user')
   export class UserController {

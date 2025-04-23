@@ -1,5 +1,5 @@
 import { Document } from "mongoose"
-import { IKids } from "src/kids/kids.interface"
+
 
 export interface IUser extends Document{
     firstName:string

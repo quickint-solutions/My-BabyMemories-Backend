@@ -1,7 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsEnum, IsArray, ValidateNested, IsOptional } from 'class-validator';
-import { KidDto } from 'src/kids/dto/create-kids.dto';
 
 export class CreateUserDto {
   @IsString()

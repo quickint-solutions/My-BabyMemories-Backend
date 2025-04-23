@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
-import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/user/dto/create-user.dto'
-import { IUser } from 'src/user/user.interface'
+import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
+import { IUser } from 'src/modules/user/user.interface'
 
 @Injectable()
 export class AuthService {
@@ -14,7 +14,7 @@ export class AuthService {
   ) {}
 
   // Signup
-  async signup(createUserDto: CreateUserDto): Promise<any> {
+   async signup(createUserDto: CreateUserDto): Promise<any> {
     const { email, password, firstName, lastName } = createUserDto
 
     const existingUser = await this.userModel.findOne({ email })

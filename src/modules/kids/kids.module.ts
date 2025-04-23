@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common'
 import { KidsController } from './kids.controller'
 import { KidsService } from './kids.service'
 import { MongooseModule } from '@nestjs/mongoose'
-import { kidsSchema } from '../schema/kids.schema'
+import { kidsSchema } from 'src/schema/kids.schema'
+
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: 'Kids', schema: kidsSchema }])],

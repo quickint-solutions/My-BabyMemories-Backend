@@ -1,6 +1,7 @@
 import { Test } from '@nestjs/testing'
 import { KidsController } from './kids.controller'
-import { KidsService } from 'src/kids/kids.service'
+import { KidsService } from './kids.service'
+
 
 describe('KidsController', () => {
   let kidsController: KidsController

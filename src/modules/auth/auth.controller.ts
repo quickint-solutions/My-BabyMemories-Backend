@@ -1,10 +1,10 @@
 import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { Response } from 'express'
-import { FacebookAuthGuard } from 'src/auth/facebook-auth.guard'
-import { GoogleAuthGuard } from 'src/auth/google-auth.guard'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
-import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/user/dto/create-user.dto'
-import { AuthService } from 'src/auth/auth.service'
+import { FacebookAuthGuard } from 'src/modules/auth/facebook-auth.guard'
+import { GoogleAuthGuard } from 'src/modules/auth/google-auth.guard'
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard'
+import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
+import { AuthService } from 'src/modules/auth/auth.service'
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +16,7 @@ export class AuthController {
       const result = await this.authService.signup(createUserDto)
       return res.status(HttpStatus.CREATED).json(result)
     } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({  
         message: error.message || 'Signup failed'
       })
     }

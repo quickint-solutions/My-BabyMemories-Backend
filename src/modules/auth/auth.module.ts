@@ -5,10 +5,12 @@ import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { JwtStrategy } from './jwt.strategy'
 import { JwtAuthGuard } from './jwt-auth.guard'
-import { GoogleStrategy } from '../utils/google.strategy'
-import { FacebookStrategy } from '../utils/facebook.strategy'
+
 import { MongooseModule } from '@nestjs/mongoose'
-import { UserSchema } from '../schema/user.schema'
+import { UserSchema } from 'src/schema/user.schema'
+import { GoogleStrategy } from 'src/utils/google.strategy'
+import { FacebookStrategy } from 'src/utils/facebook.strategy'
+
 
 @Module({
   imports: [
