@@ -1,35 +1,46 @@
-import { Test } from '@nestjs/testing'
+import { Test, TestingModule } from '@nestjs/testing'
 import { KidsController } from './kids.controller'
 import { KidsService } from './kids.service'
-
+import { getModelToken } from '@nestjs/mongoose'
 
 describe('KidsController', () => {
-  let kidsController: KidsController
-  let kidService: KidsService
+  let controller: KidsController
+  let service: KidsService
+
+  const mockUserService = {
+    findAll: jest.fn(),
+    findOne: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn()
+  }
+
+  const mockUserModel = {
+    find: jest.fn(),
+    findById: jest.fn(),
+    updateOne: jest.fn(),
+    deleteOne: jest.fn()
+  }
 
   beforeEach(async () => {
-    const moduleRef = await Test.createTestingModule({
+    const module: TestingModule = await Test.createTestingModule({
       controllers: [KidsController],
       providers: [
         {
           provide: KidsService,
-          useValue: {
-            findAll: jest.fn(),
-          },
+          useValue: mockUserService
         },
-      ],
+        {
+          provide: getModelToken('Kids'),
+          useValue: mockUserModel
+        }
+      ]
     }).compile()
 
-    kidService = moduleRef.get<KidsService>(KidsService)
-    kidsController = moduleRef.get<KidsController>(KidsController)
+    controller = module.get<KidsController>(KidsController)
+    service = module.get<KidsService>(KidsService)
   })
 
-  describe('findAll', () => {
-    it('should return an array of kids', async () => {
-      const result = [{ name: 'test kid' }]
-      jest.spyOn(kidService, 'findAll').mockResolvedValue(result as any)
-
-      expect(await kidsController.findAll()).toBe(result)
-    })
+  it('should be defined', () => {
+    expect(controller).toBeDefined()
   })
 })

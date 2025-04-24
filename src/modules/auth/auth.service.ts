@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
-import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
+import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from '../user/dto/create-user.dto'
 import { IUser } from 'src/modules/user/user.interface'
 import {
   ForgotPasswordResponseDto,
@@ -44,7 +44,6 @@ export class AuthService {
     return {
       message: 'User created successfully',
       user: {
-        _id: user._id as string,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
