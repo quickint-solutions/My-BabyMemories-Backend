@@ -34,3 +34,6 @@ export class KidResponseDto {
   dob: number;
   gender: Gender;
 }
+export class deleteKidResponseDto {
+  message: string;
+}

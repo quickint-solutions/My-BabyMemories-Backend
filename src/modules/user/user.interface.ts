@@ -8,4 +8,6 @@ export interface IUser extends Document{
     password:string
     createdAt:string
     updatedAt:string
+    provider?: string;
+    providerId?: string;
 }

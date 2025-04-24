@@ -17,7 +17,7 @@ import { FacebookStrategy } from 'src/utils/facebook.strategy'
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'default_secret',
-      signOptions: { expiresIn: '1d' }
+      signOptions: { expiresIn: '1y' } 
     }),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }])
   ],

@@ -69,7 +69,7 @@ export class AuthController {
   @Post('update-password')
   async updatePassword(@Req() req, @Body() dto: UpdatePasswordDto, @Res() res) {
     try {
-      const result = await this.authService.updatePassword(req.user as any, dto)
+      const result = await this.authService.updatePassword(req.user, dto)
       return res.status(HttpStatus.OK).json({
         message: 'Password updated successfully',
         result

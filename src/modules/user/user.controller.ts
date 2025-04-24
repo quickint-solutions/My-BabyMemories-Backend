@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
     @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Req() req: AuthenticatedRequest) {
-    return this.userService.getProfile(req.user as any);
+    return this.userService.getProfile(req.user);
   }
   }
   
