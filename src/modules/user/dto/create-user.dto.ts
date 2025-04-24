@@ -3,12 +3,6 @@ import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsEnum, IsArray, ValidateNested, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  _id: string;
-
   @IsString()
   @IsNotEmpty()
   @MaxLength(100)
