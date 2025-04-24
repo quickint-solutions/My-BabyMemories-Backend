@@ -1,5 +1,5 @@
 import { Document } from "mongoose"
-import { IKids } from "./kids.interface"
+
 
 export interface IUser extends Document{
     firstName:string
@@ -8,4 +8,6 @@ export interface IUser extends Document{
     password:string
     createdAt:string
     updatedAt:string
+    provider?: string;
+    providerId?: string;
 }

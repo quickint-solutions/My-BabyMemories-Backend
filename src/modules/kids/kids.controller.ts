@@ -7,8 +7,9 @@ import {
     Put,
     Delete,
   } from '@nestjs/common';
-  import { KidsService } from 'src/service/kids/kids.service';
-  import { KidDto } from 'src/dto/kids/create-kids.dto';
+import { KidsService } from './kids.service';
+import { KidDto , UpdateKidDto } from './dto/create-kids.dto';
+ 
   
   @Controller('kids')
   export class KidsController {
@@ -42,7 +43,7 @@ import {
     }
   
     @Put(':id')
-    async update(@Param('id') id: string, @Body() kidDto: Partial<KidDto>) {
+    async update(@Param('id') id: string, @Body() kidDto: UpdateKidDto) {
       const updatedKid = await this.kidsService.update(id, kidDto);
       return {
         message: 'Kid updated successfully',

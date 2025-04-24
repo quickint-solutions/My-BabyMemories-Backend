@@ -4,9 +4,10 @@ import {
     Req,
     UseGuards,
   } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-  import { UserService } from 'src/service/user/user.service';
+
 import { AuthenticatedRequest } from 'src/types/express-request';
+import { UserService } from './user.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
   
   @Controller('user')
   export class UserController {
@@ -15,7 +16,7 @@ import { AuthenticatedRequest } from 'src/types/express-request';
     @UseGuards(JwtAuthGuard)
   @Get('me')
   async getProfile(@Req() req: AuthenticatedRequest) {
-    return this.userService.getProfile(req.user as any);
+    return this.userService.getProfile(req.user);
   }
   }
   

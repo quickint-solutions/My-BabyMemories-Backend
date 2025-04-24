@@ -3,8 +3,17 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
-import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/dto/user/create-user.dto'
-import { IUser } from 'src/interface/user.interface'
+import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
+import { IUser } from 'src/modules/user/user.interface'
+import {
+  ForgotPasswordResponseDto,
+  LoginResponseDto,
+  OAuthLoginDto,
+  OAuthLoginResponseDto,
+  ResetPasswordResponseDto,
+  SignupResponseDto,
+  UpdatePasswordResponseDto
+} from 'src/modules/auth/dto/auth.dto'
 
 @Injectable()
 export class AuthService {
@@ -13,8 +22,7 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  // Signup
-  async signup(createUserDto: CreateUserDto): Promise<any> {
+  async signup(createUserDto: CreateUserDto): Promise<SignupResponseDto> {
     const { email, password, firstName, lastName } = createUserDto
 
     const existingUser = await this.userModel.findOne({ email })
@@ -36,18 +44,17 @@ export class AuthService {
     return {
       message: 'User created successfully',
       user: {
-        _id: user._id,
+        _id: user._id as string,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
+        password: ''
       }
     }
   }
 
   // Login
-  async login(loginDto: LoginDto): Promise<{ token: string }> {
+  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = loginDto
 
     const user = await this.userModel.findOne({ email })
@@ -69,7 +76,55 @@ export class AuthService {
     return { token }
   }
 
-  async updatePassword(user: { userId: string; email: string }, dto: UpdatePasswordDto): Promise<any> {
+  async validateOAuthLogin(dto: OAuthLoginDto): Promise<OAuthLoginResponseDto> {
+    const { email, firstName, lastName, provider, providerId } = dto
+
+    let user = (await this.userModel.findOne({ email }).lean()) as IUser
+
+    if (!user) {
+      user = new this.userModel({
+        email,
+        firstName,
+        lastName,
+        password: null,
+        provider,
+        providerId
+      })
+
+      try {
+        await user.save()
+        console.log('User saved successfully')
+      } catch (err) {
+        console.error('Error saving user:', err)
+      }
+    } else {
+      console.log('User already exists:', user.email)
+    }
+
+    const token = this.jwtService.sign({
+      id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName
+    })
+
+    return {
+      token,
+      user: {
+        _id: user._id.toString(),
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        provider: user.provider,
+        providerId: user.providerId
+      }
+    }
+  }
+
+  async updatePassword(
+    user: { userId: string; email: string },
+    dto: UpdatePasswordDto
+  ): Promise<UpdatePasswordResponseDto> {
     try {
       const { current_password, new_password } = dto
 
@@ -94,7 +149,7 @@ export class AuthService {
     }
   }
 
-  async forgotPassword(data: ForgotPasswordDto): Promise<any> {
+  async forgotPassword(data: ForgotPasswordDto): Promise<ForgotPasswordResponseDto> {
     const user = await this.userModel.findOne({ email: data.email })
     if (!user) {
       throw new NotFoundException('User not found')
@@ -107,7 +162,7 @@ export class AuthService {
     })
     return { token }
   }
-  async resetPassword(token: string, new_password: string): Promise<any> {
+  async resetPassword(token: string, new_password: string): Promise<ResetPasswordResponseDto> {
     try {
       const decodedToken = this.jwtService.verify(token)
       const user = await this.userModel.findById(decodedToken.id)

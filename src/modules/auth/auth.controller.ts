@@ -1,8 +1,10 @@
-import { Body, Controller, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
 import { Response } from 'express'
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard'
-import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/dto/user/create-user.dto'
-import { AuthService } from 'src/service/auth/auth.service'
+import { FacebookAuthGuard } from 'src/modules/auth/facebook-auth.guard'
+import { GoogleAuthGuard } from 'src/modules/auth/google-auth.guard'
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard'
+import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
+import { AuthService } from 'src/modules/auth/auth.service'
 
 @Controller('auth')
 export class AuthController {
@@ -14,7 +16,7 @@ export class AuthController {
       const result = await this.authService.signup(createUserDto)
       return res.status(HttpStatus.CREATED).json(result)
     } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({
+      return res.status(HttpStatus.BAD_REQUEST).json({  
         message: error.message || 'Signup failed'
       })
     }
@@ -34,11 +36,40 @@ export class AuthController {
       })
     }
   }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth() {}
+
+  @Get('google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    const { token } = req.user
+    return res.status(HttpStatus.OK).json({
+      message: 'Google login successful',
+      token
+    })
+  }
+
+  // Facebook Authentication
+  @Get('facebook')
+  @UseGuards(FacebookAuthGuard)
+  async facebookAuth() {}
+
+  @Get('facebook/redirect')
+  @UseGuards(FacebookAuthGuard)
+  async facebookAuthRedirect(@Req() req, @Res() res: Response) {
+    const { token } = req.user
+    return res.status(HttpStatus.OK).json({
+      message: 'Facebook login successful',
+      token
+    })
+  }
   @UseGuards(JwtAuthGuard)
   @Post('update-password')
   async updatePassword(@Req() req, @Body() dto: UpdatePasswordDto, @Res() res) {
     try {
-      const result = await this.authService.updatePassword(req.user as any, dto)
+      const result = await this.authService.updatePassword(req.user, dto)
       return res.status(HttpStatus.OK).json({
         message: 'Password updated successfully',
         result

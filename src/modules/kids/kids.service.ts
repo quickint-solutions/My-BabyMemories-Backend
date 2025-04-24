@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Kids } from 'src/schema/kids.schema';
-import { KidDto } from "src/dto/kids/create-kids.dto"
+import { deleteKidResponseDto, KidDto, UpdateKidDto } from './dto/create-kids.dto';
+
 
 @Injectable()
 export class KidsService {
@@ -27,7 +28,7 @@ export class KidsService {
     return kid;
   }
 
-  async update(id: string, kidDto: Partial<KidDto>): Promise<Kids> {
+  async update(id: string, kidDto:UpdateKidDto): Promise<Kids> {
     const updated = await this.kidsModel.findByIdAndUpdate(id, kidDto, {
       new: true,
     });
@@ -37,7 +38,7 @@ export class KidsService {
     return updated;
   }
 
-  async delete(id: string): Promise<{ message: string }> {
+  async delete(id: string): Promise<deleteKidResponseDto> {
     const deleted = await this.kidsModel.findByIdAndDelete(id);
     if (!deleted) {
       throw new NotFoundException('Kid not found');
