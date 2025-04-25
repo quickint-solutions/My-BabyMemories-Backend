@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { KidsModule } from './modules/kids/kids.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { UserModule } from './modules/user/user.module'
+import { JwtModule } from '@nestjs/jwt'
 
 @Module({
   imports: [
@@ -15,7 +16,11 @@ import { UserModule } from './modules/user/user.module'
     MongooseModule.forRoot(process.env.MONGO_URL),
     AuthModule,
     UserModule,
-    KidsModule
+    KidsModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'default_secret',
+      signOptions: { expiresIn: '1d' },
+    }),
   ],
 })
 export class AppModule {}

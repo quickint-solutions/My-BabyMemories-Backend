@@ -66,13 +66,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials')
     }
 
-    const token = this.jwtService.sign({
-      id: user._id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName
-    })
+    const token = await this.generateToken(user)
     return { token , user }
+  }
+  async generateToken(user: any) {
+    const payload = { id: user.id, email: user.email , firstName: user.firstName, lastName: user.lastName };
+    return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET });
   }
 
   async validateOAuthLogin(dto: OAuthLoginDto): Promise<OAuthLoginResponseDto> {
