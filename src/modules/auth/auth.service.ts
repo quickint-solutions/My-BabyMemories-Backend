@@ -38,9 +38,13 @@ export class AuthService {
       email,
       password: hashedPassword
     })
-
     await user.save()
-
+    const token = this.jwtService.sign({
+      id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName
+    })
     return {
       message: 'User created successfully',
       user: {
@@ -48,7 +52,8 @@ export class AuthService {
         lastName: user.lastName,
         email: user.email,
         password: ''
-      }
+      },
+      token
     }
   }
 
@@ -66,8 +71,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials')
     }
 
+
     const token = await this.generateToken(user)
     return { token , user }
+
   }
   async generateToken(user: any) {
     const payload = { id: user.id, email: user.email , firstName: user.firstName, lastName: user.lastName };

@@ -1,5 +1,5 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator"
-import { CreateUserDto } from "src/modules/user/dto/create-user.dto"
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator'
+import { CreateUserDto } from 'src/modules/user/dto/create-user.dto'
 
 export class SignupUserResponseDto {
   _id: string
@@ -13,6 +13,7 @@ export class SignupUserResponseDto {
 export class SignupResponseDto {
   message: string
   user: CreateUserDto
+  token: string
 }
 
 export class LoginResponseDto {
@@ -20,40 +21,40 @@ export class LoginResponseDto {
   user: CreateUserDto
 }
 export class OAuthLoginUserDto {
-  _id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  provider?: string;
-  providerId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  _id: string
+  email: string
+  firstName: string
+  lastName: string
+  provider?: string
+  providerId?: string
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 export class OAuthLoginResponseDto {
-  token: string;
-  user: OAuthLoginUserDto;
+  token: string
+  user: OAuthLoginUserDto
 }
 export class OAuthLoginDto {
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email: string
 
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  firstName: string
 
   @IsString()
   @IsNotEmpty()
-  lastName: string;
+  lastName: string
 
   @IsString()
   @IsNotEmpty()
-  provider: string;
+  provider: string
 
   @IsString()
   @IsNotEmpty()
-  providerId: string;
+  providerId: string
 }
 export class UpdatePasswordResponseDto {
   message: string
