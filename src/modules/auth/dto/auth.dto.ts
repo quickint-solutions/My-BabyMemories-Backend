@@ -17,6 +17,7 @@ export class SignupResponseDto {
 
 export class LoginResponseDto {
   token: string
+  user: CreateUserDto
 }
 export class OAuthLoginUserDto {
   _id: string;

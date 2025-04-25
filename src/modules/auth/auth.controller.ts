@@ -28,7 +28,8 @@ export class AuthController {
       const result = await this.authService.login(loginDto)
       return res.status(HttpStatus.OK).json({
         message: 'Login successful',
-        token: result.token
+        token: result.token,
+        user: result.user
       })
     } catch (error) {
       return res.status(HttpStatus.UNAUTHORIZED).json({

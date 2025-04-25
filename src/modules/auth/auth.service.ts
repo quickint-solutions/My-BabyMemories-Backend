@@ -72,7 +72,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName
     })
-    return { token }
+    return { token , user }
   }
 
   async validateOAuthLogin(dto: OAuthLoginDto): Promise<OAuthLoginResponseDto> {
