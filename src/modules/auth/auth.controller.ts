@@ -14,9 +14,18 @@ export class AuthController {
   async signupUser(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
     try {
       const result = await this.authService.signup(createUserDto)
-      return res.status(HttpStatus.CREATED).json(result)
+      return res.status(HttpStatus.CREATED).json({
+        message: 'User created successfully',
+        user: {
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          email: result.user.email,
+          password: ''
+        },
+        token: result.token
+      })
     } catch (error) {
-      return res.status(HttpStatus.BAD_REQUEST).json({  
+      return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Signup failed'
       })
     }
