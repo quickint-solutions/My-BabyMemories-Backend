@@ -13,6 +13,6 @@ export class Verification extends Document {
     required: true,
     set: (val: Date | string | number) => new Date(val).getTime()
   })
-  expiryAt: number
+  expiryAt: Date
 }
 export const verificationSchema = SchemaFactory.createForClass(Verification)

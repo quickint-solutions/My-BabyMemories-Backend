@@ -17,13 +17,13 @@ export class KidsService {
   }
 
   async findAll(userId:string): Promise<Kids[]> {
-    return this.kidsModel.find({ userId, isDeleted: false }).exec()
+    return this.kidsModel.find({ userId, isDeleted: false }).populate('userId');
   }
 
   async findById(id: string): Promise<Kids> {
-    const kid = await this.kidsModel.findById(id);
+    const kid = await this.kidsModel.findById(id).populate('userId');
     if (!kid) {
-      throw new NotFoundException('Kid not found');
+      throw new NotFoundException('Kid not found')
     }
     return kid;
   }

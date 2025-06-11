@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing'
 import { KidsController } from './kids.controller'
 import { KidsService } from './kids.service'
-
+import { AuthenticatedRequest } from 'src/types/express-request'
 
 describe('KidsController', () => {
   let kidsController: KidsController
@@ -14,10 +14,10 @@ describe('KidsController', () => {
         {
           provide: KidsService,
           useValue: {
-            findAll: jest.fn(),
-          },
-        },
-      ],
+            findAll: jest.fn()
+          }
+        }
+      ]
     }).compile()
 
     kidService = moduleRef.get<KidsService>(KidsService)
@@ -25,11 +25,11 @@ describe('KidsController', () => {
   })
 
   describe('findAll', () => {
-    it('should return an array of kids', async () => {
+    it('should return an array of kids', async (req: any) => {
       const result = [{ name: 'test kid' }]
       jest.spyOn(kidService, 'findAll').mockResolvedValue(result as any)
 
-      expect(await kidsController.findAll()).toBe(result)
+      expect(await kidsController.findAll(req.user.userId)).toBe(result)
     })
   })
 })

@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 
-
 import { KidsModule } from './modules/kids/kids.module'
 import { AuthModule } from './modules/auth/auth.module'
 import { UserModule } from './modules/user/user.module'
+import { PostModule } from './modules/post/post.module'
 import { JwtModule } from '@nestjs/jwt'
 
 @Module({
@@ -17,10 +17,11 @@ import { JwtModule } from '@nestjs/jwt'
     AuthModule,
     UserModule,
     KidsModule,
+    PostModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'default_secret',
-      signOptions: { expiresIn: '1d' },
-    }),
-  ],
+      signOptions: { expiresIn: '1d' }
+    })
+  ]
 })
 export class AppModule {}

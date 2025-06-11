@@ -1,4 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IUser } from 'src/modules/user/user.interface';
 import { Gender } from 'src/schema/kids.schema';
 
 export class KidDto {
@@ -13,6 +14,10 @@ export class KidDto {
   @IsEnum(Gender)
   @IsNotEmpty()
   readonly gender: Gender;
+
+  @IsString()
+  @IsNotEmpty()
+  userId: IUser | string;
 }
 
 export class UpdateKidDto {
@@ -27,12 +32,17 @@ export class UpdateKidDto {
   @IsEnum(Gender)
   @IsOptional()
   gender?: Gender;
+
+  @IsString()
+  @IsOptional()
+  userId?: IUser;
 }
 export class KidResponseDto {
   id: string;
   name: string;
   dob: number;
   gender: Gender;
+  userId: IUser;
 }
 export class deleteKidResponseDto {
   message: string;
