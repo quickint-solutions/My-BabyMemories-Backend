@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module'
 import { UserModule } from './modules/user/user.module'
 import { PostModule } from './modules/post/post.module'
 import { JwtModule } from '@nestjs/jwt'
+import { BookmarkModule } from './modules/bookmark/boomark.module'
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { JwtModule } from '@nestjs/jwt'
     UserModule,
     KidsModule,
     PostModule,
+    BookmarkModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'default_secret',
       signOptions: { expiresIn: '1d' }
