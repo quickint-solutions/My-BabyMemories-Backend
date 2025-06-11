@@ -16,8 +16,8 @@ export class KidsService {
     return kid.save();
   }
 
-  async findAll(): Promise<Kids[]> {
-    return this.kidsModel.find();
+  async findAll(userId:string): Promise<Kids[]> {
+    return this.kidsModel.find({ userId, isDeleted: false }).exec()
   }
 
   async findById(id: string): Promise<Kids> {
@@ -39,7 +39,11 @@ export class KidsService {
   }
 
   async delete(id: string): Promise<deleteKidResponseDto> {
-    const deleted = await this.kidsModel.findByIdAndDelete(id);
+    const deleted = await this.kidsModel.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true },
+    );
     if (!deleted) {
       throw new NotFoundException('Kid not found');
     }

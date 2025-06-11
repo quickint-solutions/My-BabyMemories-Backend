@@ -3,8 +3,15 @@ import { Response } from 'express'
 import { FacebookAuthGuard } from 'src/modules/auth/facebook-auth.guard'
 import { GoogleAuthGuard } from 'src/modules/auth/google-auth.guard'
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard'
-import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
+import {
+  CreateUserDto,
+  ForgotPasswordDto,
+  LoginDto,
+  ResetPasswordDto,
+  UpdatePasswordDto
+} from 'src/modules/user/dto/create-user.dto'
 import { AuthService } from 'src/modules/auth/auth.service'
+import { IVerification } from '../user/user.interface'
 
 @Controller('auth')
 export class AuthController {
@@ -22,11 +29,56 @@ export class AuthController {
           email: result.user.email,
           password: ''
         },
+        verification: {
+          code: result.verification.code,
+          expiryAt: result.verification.expiryAt
+        },
         token: result.token
       })
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Signup failed'
+      })
+    }
+  }
+  @Post('verify-email')
+  async verifyEmail(@Body('email') email: string, @Body('code') code: string, @Res() res: Response) {
+    try {
+      const result = await this.authService.verifyEmail(email, code)
+      return res.status(HttpStatus.OK).json({
+        message: 'Email verified successfully',
+        user: {
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          email: result.user.email,
+          password: ''
+        },
+        token: result.token,
+        verification: {
+          email: result.verification.email,
+          code: result.verification.code,
+          expiryAt: result.verification.expiryAt
+        }
+      })
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: error.message || 'Verification failed'
+      })
+    }
+  }
+  @Post('resend-verification-email')
+  async resendVerificationEmail(@Body('email') email: string, @Res() res: Response) {
+    try {
+      const result = await this.authService.resendVerificationEmail(email)
+      return res.status(HttpStatus.OK).json({
+        message: 'Verification email sent',
+        verification: {
+          email: result.verification
+        }
+      })
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: error.message || 'Resend verification email failed'
       })
     }
   }
@@ -102,9 +154,9 @@ export class AuthController {
     }
   }
   @Post('reset-password')
-  async resetPassword(@Query('token') token: string, @Body('new_password') new_password: string, @Res() res) {
+  async resetPassword(@Body() dto: IVerification & { new_password: string }, string, @Res() res) {
     try {
-      const result = await this.authService.resetPassword(token, new_password)
+      const result = await this.authService.resetPassword(dto)
       return res.status(HttpStatus.OK).json(result)
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({

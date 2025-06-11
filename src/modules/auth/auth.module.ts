@@ -9,6 +9,8 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { UserSchema } from 'src/schema/user.schema'
 import { GoogleStrategy } from 'src/utils/google.strategy'
 import { FacebookStrategy } from 'src/utils/facebook.strategy'
+import { verificationSchema } from 'src/schema/verfication.schema'
+import { notificationSchema } from 'src/schema/notification.schema'
 
 @Module({
   imports: [
@@ -17,10 +19,14 @@ import { FacebookStrategy } from 'src/utils/facebook.strategy'
       secret: process.env.JWT_SECRET || 'default_secret',
       signOptions: { expiresIn: '1y' }
     }),
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }])
+    MongooseModule.forFeature([
+      { name: 'User', schema: UserSchema },
+      { name: 'Verification', schema: verificationSchema },
+      { name: 'Notification', schema: notificationSchema }
+    ])
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, GoogleStrategy, FacebookStrategy],
-  exports: [AuthService , JwtModule]
+  exports: [AuthService, JwtModule]
 })
 export class AuthModule {}

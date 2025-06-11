@@ -6,8 +6,15 @@ export interface IUser extends Document{
     lastName:string
     email:string
     password:string
+    isEmailVerified:boolean
     createdAt:string
     updatedAt:string
     provider?: string;
     providerId?: string;
+}
+
+export interface IVerification  extends Document {
+  email: string
+  code: string
+  expiryAt: number
 }

@@ -15,6 +15,9 @@ export class User extends Document {
   @Prop({ required: false })
   password: string
 
+  @Prop({ default: false })
+  isEmailVerified: boolean
+
   @Prop()
   provider: string
 

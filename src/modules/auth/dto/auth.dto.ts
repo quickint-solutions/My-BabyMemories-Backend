@@ -9,11 +9,16 @@ export class SignupUserResponseDto {
   createdAt: Date
   updatedAt: Date
 }
-
+export class verficationResponseDto {
+  email: string
+  code: string
+  expiryAt: number
+}
 export class SignupResponseDto {
   message: string
   user: CreateUserDto
   token: string
+  verification: verficationResponseDto
 }
 
 export class LoginResponseDto {
@@ -60,10 +65,13 @@ export class UpdatePasswordResponseDto {
   message: string
 }
 export class ForgotPasswordResponseDto {
-  token: string
+  message: string
+  verification: verficationResponseDto
 }
 export class ResetPasswordResponseDto {
   message: string
+  token: string
+  user: CreateUserDto
 }
 export class JwtStrategyResponseDto {
   id: string
