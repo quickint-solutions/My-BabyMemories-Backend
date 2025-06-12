@@ -18,9 +18,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signupUser(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
+  async signupUser(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) res: Response) {
     try {
       const result = await this.authService.signup(createUserDto)
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      })
       return res.status(HttpStatus.CREATED).json({
         message: 'User created successfully',
         user: {
@@ -42,9 +47,18 @@ export class AuthController {
     }
   }
   @Post('verify-email')
-  async verifyEmail(@Body('email') email: string, @Body('code') code: string, @Res() res: Response) {
+  async verifyEmail(
+    @Body('email') email: string,
+    @Body('code') code: string,
+    @Res({ passthrough: true }) res: Response
+  ) {
     try {
       const result = await this.authService.verifyEmail(email, code)
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      })
       return res.status(HttpStatus.OK).json({
         message: 'Email verified successfully',
         user: {
@@ -84,9 +98,14 @@ export class AuthController {
   }
 
   @Post('login')
-  async loginUser(@Body() loginDto: LoginDto, @Res() res: Response) {
+  async loginUser(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {
     try {
       const result = await this.authService.login(loginDto)
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      })
       return res.status(HttpStatus.OK).json({
         message: 'Login successful',
         token: result.token,
@@ -154,9 +173,14 @@ export class AuthController {
     }
   }
   @Post('reset-password')
-  async resetPassword(@Body() dto: IVerification & { new_password: string }, string, @Res() res) {
+  async resetPassword(@Body() dto: IVerification & { new_password: string }, @Res({ passthrough: true }) res) {
     try {
       const result = await this.authService.resetPassword(dto)
+      res.cookie('token', result.token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+      })
       return res.status(HttpStatus.OK).json(result)
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
