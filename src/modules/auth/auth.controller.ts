@@ -26,20 +26,7 @@ export class AuthController {
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000
       })
-      return res.status(HttpStatus.CREATED).json({
-        message: 'User created successfully',
-        user: {
-          firstName: result.user.firstName,
-          lastName: result.user.lastName,
-          email: result.user.email,
-          password: ''
-        },
-        verification: {
-          code: result.verification.code,
-          expiryAt: result.verification.expiryAt
-        },
-        token: result.token
-      })
+      return result
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Signup failed'
@@ -59,21 +46,7 @@ export class AuthController {
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000
       })
-      return res.status(HttpStatus.OK).json({
-        message: 'Email verified successfully',
-        user: {
-          firstName: result.user.firstName,
-          lastName: result.user.lastName,
-          email: result.user.email,
-          password: ''
-        },
-        token: result.token,
-        verification: {
-          email: result.verification.email,
-          code: result.verification.code,
-          expiryAt: result.verification.expiryAt
-        }
-      })
+      return result
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Verification failed'
@@ -84,12 +57,7 @@ export class AuthController {
   async resendVerificationEmail(@Body('email') email: string, @Res() res: Response) {
     try {
       const result = await this.authService.resendVerificationEmail(email)
-      return res.status(HttpStatus.OK).json({
-        message: 'Verification email sent',
-        verification: {
-          email: result.verification
-        }
-      })
+      return result
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Resend verification email failed'
@@ -106,11 +74,7 @@ export class AuthController {
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000
       })
-      return res.status(HttpStatus.OK).json({
-        message: 'Login successful',
-        token: result.token,
-        user: result.user
-      })
+      return result
     } catch (error) {
       return res.status(HttpStatus.UNAUTHORIZED).json({
         message: error.message || 'Login failed'
@@ -151,10 +115,7 @@ export class AuthController {
   async updatePassword(@Req() req, @Body() dto: UpdatePasswordDto, @Res() res) {
     try {
       const result = await this.authService.updatePassword(req.user, dto)
-      return res.status(HttpStatus.OK).json({
-        message: 'Password updated successfully',
-        result
-      })
+      return result
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Password update failed'
@@ -181,7 +142,7 @@ export class AuthController {
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000
       })
-      return res.status(HttpStatus.OK).json(result)
+      return result
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Password reset failed'
