@@ -149,4 +149,22 @@ export class AuthController {
       })
     }
   }
+  // logout api
+  @Post('logout')
+  async logout(@Req() req, @Res() res: Response) {
+    try {
+      res.clearCookie('token', {
+        httpOnly: true,
+        sameSite: 'strict'
+      })
+
+      return res.status(HttpStatus.OK).json({
+        message: 'Logout successful'
+      })
+    } catch (error) {
+      return res.status(HttpStatus.BAD_REQUEST).json({
+        message: error.message || 'Logout failed'
+      })
+    }
+  }
 }
