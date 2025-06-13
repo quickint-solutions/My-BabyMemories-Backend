@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString, IsArray, IsMongoId, IsNumber } from 'class-validator'
+import { IsNotEmpty, IsOptional, IsString, IsArray, IsMongoId } from 'class-validator'
 
 export class postDto {
   @IsArray()
@@ -16,7 +16,7 @@ export class postDto {
 
   @IsOptional()
   @IsNotEmpty()
-  date: number
+  date: string
 }
 export class updatePostDto {
   @IsArray()
@@ -32,9 +32,9 @@ export class updatePostDto {
   @IsOptional()
   description?: string
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  date?: number
+  date?: string
 }
 export class deleteResponseDto {
   message: string

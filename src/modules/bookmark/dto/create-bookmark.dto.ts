@@ -16,7 +16,7 @@ export class UpdateBookmarkDto {
     @IsString()
     readonly postId: string;
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     readonly userId: IUser | string;
 }

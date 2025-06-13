@@ -9,7 +9,7 @@ export class Post extends Document {
     required: false,
     set: (val: Date | string | number) => new Date(val).getTime()
   })
-  date: number
+  date: Date
 
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Kids' }] })
   kidsId: Kids[]

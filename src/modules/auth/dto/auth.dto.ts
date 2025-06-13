@@ -1,12 +1,23 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator'
 import { CreateUserDto } from 'src/modules/user/dto/create-user.dto'
-
+import { ApiProperty } from '@nestjs/swagger'
 export class SignupUserResponseDto {
+  @ApiProperty()
   _id: string
+
+  @ApiProperty()
   firstName: string
+
+  @ApiProperty()
   lastName: string
+
+  @ApiProperty()
   email: string
+
+  @ApiProperty()
   createdAt: Date
+
+  @ApiProperty()
   updatedAt: Date
 }
 export class verficationResponseDto {

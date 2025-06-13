@@ -1,22 +1,22 @@
 import { Body, Controller, Get, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { Response } from 'express'
 import { FacebookAuthGuard } from 'src/modules/auth/facebook-auth.guard'
 import { GoogleAuthGuard } from 'src/modules/auth/google-auth.guard'
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard'
-import {
-  CreateUserDto,
-  ForgotPasswordDto,
-  LoginDto,
-  UpdatePasswordDto
-} from 'src/modules/user/dto/create-user.dto'
+import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
 import { AuthService } from 'src/modules/auth/auth.service'
 import { IVerification } from '../user/user.interface'
+import { SignupResponseDto } from './dto/auth.dto'
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
+  @ApiOperation({ summary: 'User Signup' })
+  @ApiResponse({ status: 201, description: 'User signed up', type: SignupResponseDto })
   async signupUser(@Body() createUserDto: CreateUserDto, @Res({ passthrough: true }) res: Response) {
     try {
       const result = await this.authService.signup(createUserDto)

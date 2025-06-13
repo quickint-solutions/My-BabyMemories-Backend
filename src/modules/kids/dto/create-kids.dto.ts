@@ -8,15 +8,15 @@ export class KidDto {
   name: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  dob: number;
+  @IsString()
+  dob: string;
 
   @IsEnum(Gender)
   @IsNotEmpty()
   readonly gender: Gender;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   userId: IUser | string;
 }
 
@@ -25,9 +25,9 @@ export class UpdateKidDto {
   @IsOptional()
   name?: string;
 
-  @IsNumber()
+  @IsString()
   @IsOptional()
-  dob?: number;
+  dob?: string;
 
   @IsEnum(Gender)
   @IsOptional()
@@ -40,7 +40,7 @@ export class UpdateKidDto {
 export class KidResponseDto {
   id: string;
   name: string;
-  dob: number;
+  dob: string;
   gender: Gender;
   userId: IUser;
 }
