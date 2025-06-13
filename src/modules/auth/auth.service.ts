@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
+import * as nodemailer from 'nodemailer'
+
 import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
-import { IUser, IVerification } from 'src/modules/user/user.interface'
-import { INotification } from 'src/modules/notification/notification.interface'
 import {
   ForgotPasswordResponseDto,
   LoginResponseDto,
@@ -15,7 +15,8 @@ import {
   SignupResponseDto,
   UpdatePasswordResponseDto
 } from 'src/modules/auth/dto/auth.dto'
-import nodemailer from 'nodemailer'
+import { IUser, IVerification } from 'src/modules/user/user.interface'
+import { INotification } from 'src/modules/notification/notification.interface'
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,6 @@ export class AuthService {
     @InjectModel('User') private readonly userModel: Model<IUser>,
     @InjectModel('Verification') private readonly verificationModel: Model<IVerification>,
     @InjectModel('Notification') private readonly notificationModel: Model<INotification>,
-
     private readonly jwtService: JwtService
   ) {}
 
@@ -31,9 +31,7 @@ export class AuthService {
     const { email, password, firstName, lastName } = createUserDto
 
     const existingUser = await this.userModel.findOne({ email })
-    if (existingUser) {
-      throw new UnauthorizedException('Email already in use')
-    }
+    if (existingUser) throw new UnauthorizedException('Email already in use')
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -43,13 +41,10 @@ export class AuthService {
       email,
       password: hashedPassword
     })
-    const findNotification = await this.notificationModel.findOne({
-      userId: user._id
-    })
 
-    let createNotification
+    const findNotification = await this.notificationModel.findOne({ userId: user._id })
     if (!findNotification) {
-      createNotification = await this.notificationModel.create({
+      await this.notificationModel.create({
         userId: user._id,
         daily: false,
         weekly: false,
@@ -57,12 +52,16 @@ export class AuthService {
         milestones: false
       })
     }
-    const verfication = await this.verificationModel.create({
+
+    const verification = await this.verificationModel.create({
       email,
-      code: Math.floor(100000 + Math.random() * 900000),
+      code: Math.floor(100000 + Math.random() * 900000).toString(),
       expiryAt: new Date(Date.now() + 60 * 60 * 1000)
     })
+    await this.sendVerificationEmail(email, verification.code)
+
     const token = await this.generateToken(user)
+
     return {
       message: 'User created successfully',
       user: {
@@ -71,12 +70,7 @@ export class AuthService {
         email: user.email,
         password: ''
       },
-      token,
-      verification: {
-        email: verfication.email,
-        code: verfication.code,
-        expiryAt: verfication.expiryAt
-      }
+      token
     }
   }
 
@@ -88,55 +82,52 @@ export class AuthService {
         pass: process.env.EMAIL_PASS
       }
     })
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
       subject: 'Verify your email',
       text: `Your verification code is ${code}`
     }
+
     await transporter.sendMail(mailOptions)
   }
 
-  public async resendVerificationEmail(email: string) {
+  async resendVerificationEmail(email: string) {
     const user = await this.userModel.findOne({ email })
-    if (!user) {
-      throw new NotFoundException('User not found')
-    }
-    if (user.isEmailVerified) {
-      throw new Error('User already verified')
-    }
+    if (!user) throw new NotFoundException('User not found')
 
-    const verificationCode = await this.verificationModel.create({
-      email: user.email,
-      code: Math.floor(100000 + Math.random() * 900000),
-      expiryAt: new Date(Date.now() + 60 * 60 * 1000)
+    const code = Math.floor(100000 + Math.random() * 900000).toString()
+    await this.verificationModel.deleteMany({ email: user.email })
+
+    await this.verificationModel.create({
+      email,
+      code,
+      expiryAt: Date.now() + 3600000
     })
-    await this.sendVerificationEmail(user.email, verificationCode.code)
-    return {
-      message: 'Verification email sent successfully',
-      verification: verificationCode.code
-    }
+
+    await this.sendVerificationEmail(email, code)
+
+    return { message: 'Verification code sent successfully' }
   }
 
   async verifyEmail(email: string, code: string): Promise<SignupResponseDto> {
-    const verification = await this.verificationModel.findOne({ email: email })
-    if (!verification) {
-      throw new NotFoundException('No verification found for this email')
-    }
-    if (verification.code !== code) {
+    const verification = await this.verificationModel.findOne({ email })
+    if (!verification) throw new NotFoundException('No verification found for this email')
+    if (verification.code !== code.toString()) {
       throw new UnauthorizedException('Invalid verification code')
     }
-    if (verification.expiryAt < Date.now()) {
-      throw new UnauthorizedException('Verification code has expired')
-    }
-    const user = await this.userModel.findOne({ email: verification.email })
-    if (!user) {
-      throw new NotFoundException('User not found')
-    }
+    if (verification.expiryAt < Date.now()) throw new UnauthorizedException('Verification code has expired')
+
+    const user = await this.userModel.findOne({ email })
+    if (!user) throw new NotFoundException('User not found')
+
     user.isEmailVerified = true
     await user.save()
     await this.verificationModel.deleteOne({ code })
+
     const token = await this.generateToken(user)
+
     return {
       message: 'Email verified successfully',
       user: {
@@ -145,42 +136,36 @@ export class AuthService {
         email: user.email,
         password: ''
       },
-      token,
-      verification: {
-        email: verification.email,
-        code: verification.code,
-        expiryAt: verification.expiryAt
-      }
+      token
     }
   }
 
-  // Login
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = loginDto
-
     const user = await this.userModel.findOne({ email })
-    if (!user) {
-      throw new NotFoundException('User not found')
-    }
+    if (!user) throw new NotFoundException('User not found')
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials')
-    }
+    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials')
 
     const token = await this.generateToken(user)
     return { token, user }
   }
+
   async generateToken(user: any) {
-    const payload = { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName }
+    const payload = {
+      id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName
+    }
     return this.jwtService.sign(payload, { secret: process.env.JWT_SECRET })
   }
 
   async validateOAuthLogin(dto: OAuthLoginDto): Promise<OAuthLoginResponseDto> {
     const { email, firstName, lastName, provider, providerId } = dto
 
-    let user = (await this.userModel.findOne({ email }).lean()) as IUser
-
+    let user = await this.userModel.findOne({ email })
     if (!user) {
       user = new this.userModel({
         email,
@@ -193,20 +178,12 @@ export class AuthService {
 
       try {
         await user.save()
-        console.log('User saved successfully')
       } catch (err) {
         console.error('Error saving user:', err)
       }
-    } else {
-      console.log('User already exists:', user.email)
     }
 
-    const token = this.jwtService.sign({
-      id: user._id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName
-    })
+    const token = await this.generateToken(user)
 
     return {
       token,
@@ -225,41 +202,34 @@ export class AuthService {
     user: { userId: string; email: string },
     dto: UpdatePasswordDto
   ): Promise<UpdatePasswordResponseDto> {
-    try {
-      const { current_password, new_password } = dto
+    const { current_password, new_password } = dto
 
-      const existingUser = await this.userModel.findById(user.userId)
-      if (!existingUser) {
-        throw new NotFoundException('User not found')
-      }
+    const existingUser = await this.userModel.findById(user.userId)
+    if (!existingUser) throw new NotFoundException('User not found')
 
-      const isPasswordValid = await bcrypt.compare(current_password, existingUser.password)
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid credentials')
-      }
-      if (current_password === new_password) {
-        throw new UnauthorizedException('New password should be different from current password')
-      }
-      const hashedPassword = await bcrypt.hash(new_password, 10)
-      existingUser.password = hashedPassword
-      await existingUser.save()
-      return { message: 'Password updated successfully' }
-    } catch (error) {
-      throw error
-    }
+    const isPasswordValid = await bcrypt.compare(current_password, existingUser.password)
+    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials')
+    if (current_password === new_password) throw new UnauthorizedException('New password should be different')
+
+    const hashedPassword = await bcrypt.hash(new_password, 10)
+    existingUser.password = hashedPassword
+    await existingUser.save()
+
+    return { message: 'Password updated successfully' }
   }
 
   async forgotPassword(data: ForgotPasswordDto): Promise<ForgotPasswordResponseDto> {
     const user = await this.userModel.findOne({ email: data.email })
-    if (!user) {
-      throw new NotFoundException('User not found')
-    }
+    if (!user) throw new NotFoundException('User not found')
+
     const verificationCode = await this.verificationModel.create({
       email: user.email,
       code: Math.floor(100000 + Math.random() * 900000).toString(),
       expiryAt: Date.now() + 3600000
     })
+
     await this.sendVerificationEmail(user.email, verificationCode.code)
+
     return {
       message: 'Verification code sent successfully',
       verification: {
@@ -269,39 +239,33 @@ export class AuthService {
       }
     }
   }
+
   async resetPassword(data: IVerification & { new_password: string }): Promise<ResetPasswordResponseDto> {
-    try {
-      const verificationEmail = await this.verificationModel.findOne({ email: data.email })
-      if (!verificationEmail) {
-        throw new NotFoundException('Email not found')
+    const verification = await this.verificationModel.findOne({ email: data.email })
+    if (!verification) throw new NotFoundException('Verification entry not found')
+    if (verification.expiryAt < Date.now()) throw new UnauthorizedException('Verification code expired')
+    if (verification.code !== data.code) throw new UnauthorizedException('Invalid verification code')
+
+    const user = await this.userModel.findOne({ email: data.email })
+    if (!user) throw new NotFoundException('User not found')
+
+    const hashedPassword = await bcrypt.hash(data.new_password, 10)
+    user.password = hashedPassword
+    await user.save()
+
+    await this.verificationModel.deleteOne({ email: data.email })
+
+    const token = await this.generateToken(user)
+
+    return {
+      message: 'Password reset successfully',
+      token,
+      user: {
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        password: ''
       }
-      if (verificationEmail.expiryAt < Date.now()) {
-        throw new UnauthorizedException('Verification code expired')
-      }
-      if (verificationEmail.code !== data.code) {
-        throw new UnauthorizedException('Invalid verification code')
-      }
-      const user = await this.userModel.findOne({ email: data.email })
-      if (!user) {
-        throw new NotFoundException('User not found')
-      }
-      const hashedPassword = await bcrypt.hash(data.new_password, 10)
-      user.password = hashedPassword
-      await user.save()
-      await this.verificationModel.deleteOne({ email: data.email })
-      const token = await this.generateToken(user)
-      return {
-        message: 'Password reset successfully',
-        token,
-        user: {
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          password: ''
-        }
-      }
-    } catch (error) {
-      throw error
     }
   }
 }

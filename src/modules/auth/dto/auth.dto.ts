@@ -18,7 +18,6 @@ export class SignupResponseDto {
   message: string
   user: CreateUserDto
   token: string
-  verification: verficationResponseDto
 }
 
 export class LoginResponseDto {

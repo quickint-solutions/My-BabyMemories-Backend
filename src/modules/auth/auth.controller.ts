@@ -7,7 +7,6 @@ import {
   CreateUserDto,
   ForgotPasswordDto,
   LoginDto,
-  ResetPasswordDto,
   UpdatePasswordDto
 } from 'src/modules/user/dto/create-user.dto'
 import { AuthService } from 'src/modules/auth/auth.service'
@@ -57,7 +56,7 @@ export class AuthController {
   async resendVerificationEmail(@Body('email') email: string, @Res() res: Response) {
     try {
       const result = await this.authService.resendVerificationEmail(email)
-      return result
+      return res.status(HttpStatus.OK).json(result)
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Resend verification email failed'
