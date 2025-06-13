@@ -114,7 +114,7 @@ export class AuthController {
   async updatePassword(@Req() req, @Body() dto: UpdatePasswordDto, @Res() res) {
     try {
       const result = await this.authService.updatePassword(req.user, dto)
-      return result
+      return res.status(HttpStatus.OK).json(result)
     } catch (error) {
       return res.status(HttpStatus.BAD_REQUEST).json({
         message: error.message || 'Password update failed'

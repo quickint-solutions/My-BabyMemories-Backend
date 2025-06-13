@@ -198,10 +198,7 @@ export class AuthService {
     }
   }
 
-  async updatePassword(
-    user: { userId: string; email: string },
-    dto: UpdatePasswordDto
-  ): Promise<UpdatePasswordResponseDto> {
+  async updatePassword(user: { userId: string }, dto: UpdatePasswordDto): Promise<UpdatePasswordResponseDto> {
     const { current_password, new_password } = dto
 
     const existingUser = await this.userModel.findById(user.userId)
