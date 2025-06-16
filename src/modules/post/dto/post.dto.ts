@@ -1,7 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString, IsArray, IsMongoId } from 'class-validator'
 
 export class postDto {
-  @IsArray()
   @IsMongoId({ each: true })
   @IsNotEmpty()
   kidsId: string[]
