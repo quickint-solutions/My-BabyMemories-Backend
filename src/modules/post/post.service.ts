@@ -26,6 +26,7 @@ export class PostService {
           await minioClient.putObject(bucketName, filename, Readable.from(file.buffer), file.size, {
             'Content-Type': file.mimetype
           })
+          // const presignedUrl = await minioClient.presignedGetObject(bucketName, filename, 24 * 60 * 60)
 
           await this.mediaModel.create({
             type: file.mimetype.startsWith('video') ? MediaType.VIDEO : MediaType.IMAGE,
@@ -39,40 +40,64 @@ export class PostService {
 
     return post
   }
-
   async getAll(userId: string) {
     const posts = await this.postModel.find({ userId, isDeleted: false }).populate('kidsId').populate('userId').lean()
 
     const postIds = posts.map(post => post._id)
-    const mediaMap = await this.mediaModel.find({ postId: { $in: postIds }, isDeleted: false }).lean()
-    const mediaMapByPostId = mediaMap.reduce((acc, media: any) => {
-      if (!acc[media.postId]) {
-        acc[media.postId] = []
-      }
-      acc[media.postId].push(media)
-      return acc
-    }, {})
+    const mediaList = await this.mediaModel.find({ postId: { $in: postIds }, isDeleted: false }).lean()
+
+    const mediaWithUrls = await Promise.all(
+      mediaList.map(async media => {
+        const url = await minioClient.presignedGetObject('my-baby-memories', media.url, 60 * 60)
+        return { ...media, url }
+      })
+    )
+
+    const mediaMapByPostId = mediaWithUrls.reduce(
+      (acc, media: any) => {
+        const postId = media.postId.toString()
+        if (!acc[postId]) {
+          acc[postId] = []
+        }
+        acc[postId].push(media)
+        return acc
+      },
+      {} as Record<string, any[]>
+    )
+
     const postsWithMedia = posts.map((post: any) => {
-      const media = mediaMapByPostId[post._id] || []
+      const media = mediaMapByPostId[post._id.toString()] || []
       return {
         ...post,
         media
       }
     })
+
     return postsWithMedia
   }
 
   async getById(id: string) {
     const post = await this.postModel.findById(id).populate('kidsId').populate('userId').lean()
+
     if (!post) {
       throw new NotFoundException('Post not found')
     }
+
     const media = await this.mediaModel.find({ postId: id, isDeleted: false }).lean()
+
+    const mediaWithUrls = await Promise.all(
+      media.map(async m => {
+        const url = await minioClient.presignedGetObject('my-baby-memories', m.url, 60 * 60)
+        return { ...m, url }
+      })
+    )
+
     return {
       ...post,
-      media
+      media: mediaWithUrls
     }
   }
+
   async update(id: string, postDto: updatePostDto, files?: Express.Multer.File[]): Promise<Post> {
     const post = await this.postModel.findByIdAndUpdate(id, postDto, { new: true })
     if (!post) {
