@@ -11,6 +11,9 @@ export class Post extends Document {
   })
   date: Date
 
+  @Prop({ required: false })
+  title: string
+
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Kids' }] })
   kidsId: Kids[]
 

@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common'
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Post } from 'src/schema/post.schema'
@@ -15,25 +15,26 @@ export class PostService {
     @InjectModel(Post.name) private readonly postModel: Model<Post>,
     @InjectModel(Media.name) private readonly mediaModel: Model<Media>
   ) {}
-  async create(postDto: postDto & { file?: Express.Multer.File }): Promise<Post> {
-    const { file, ...postData } = postDto
+  async create(postDto: postDto, files?: Express.Multer.File[]): Promise<Post> {
+    const post = await this.postModel.create(postDto)
+    if (files && files.length > 0) {
+      await Promise.all(
+        files.map(async file => {
+          const ext = mime.extension(file.mimetype) || 'bin'
+          const filename = `${uuid()}.${ext}`
 
-    const post = await this.postModel.create(postData)
+          await minioClient.putObject(bucketName, filename, Readable.from(file.buffer), file.size, {
+            'Content-Type': file.mimetype
+          })
 
-    if (file) {
-      const ext = mime.extension(file.mimetype) || 'bin'
-      const filename = `${uuid()}.${ext}`
-
-      await minioClient.putObject(bucketName, filename, Readable.from(file.buffer), file.size, {
-        'Content-Type': file.mimetype
-      })
-
-      await this.mediaModel.create({
-        type: file.mimetype.startsWith('video') ? MediaType.VIDEO : MediaType.IMAGE,
-        url: `${filename}`,
-        postId: post._id,
-        userId: post.userId
-      })
+          await this.mediaModel.create({
+            type: file.mimetype.startsWith('video') ? MediaType.VIDEO : MediaType.IMAGE,
+            url: filename,
+            postId: post._id,
+            userId: post.userId
+          })
+        })
+      )
     }
 
     return post
@@ -72,15 +73,13 @@ export class PostService {
       media
     }
   }
-  async update(id: string, postDto: updatePostDto & { file?: Express.Multer.File }): Promise<Post> {
-    const { file, ...postData } = postDto
-
-    const post = await this.postModel.findByIdAndUpdate(id, postData, { new: true })
+  async update(id: string, postDto: updatePostDto, files?: Express.Multer.File[]): Promise<Post> {
+    const post = await this.postModel.findByIdAndUpdate(id, postDto, { new: true })
     if (!post) {
       throw new NotFoundException('Post not found')
     }
 
-    if (file) {
+    if (files && files.length > 0) {
       const existingMedia = await this.mediaModel.find({ postId: id, isDeleted: false })
 
       await Promise.all(
@@ -90,19 +89,23 @@ export class PostService {
         })
       )
 
-      const ext = mime.extension(file.mimetype) || 'bin'
-      const filename = `${uuid()}.${ext}`
+      await Promise.all(
+        files.map(async file => {
+          const ext = mime.extension(file.mimetype) || 'bin'
+          const filename = `${uuid()}.${ext}`
 
-      await minioClient.putObject(bucketName, filename, Readable.from(file.buffer), file.size, {
-        'Content-Type': file.mimetype
-      })
+          await minioClient.putObject(bucketName, filename, Readable.from(file.buffer), file.size, {
+            'Content-Type': file.mimetype
+          })
 
-      await this.mediaModel.create({
-        type: file.mimetype.startsWith('video') ? MediaType.VIDEO : MediaType.IMAGE,
-        url: filename,
-        postId: post._id,
-        userId: post.userId
-      })
+          await this.mediaModel.create({
+            type: file.mimetype.startsWith('video') ? MediaType.VIDEO : MediaType.IMAGE,
+            url: filename,
+            postId: post._id,
+            userId: post.userId
+          })
+        })
+      )
     }
 
     return post

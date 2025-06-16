@@ -10,9 +10,10 @@ import {
   Query,
   Param,
   Delete,
-  Put
+  Put,
+  UploadedFiles
 } from '@nestjs/common'
-import { FileInterceptor } from '@nestjs/platform-express'
+import { FilesInterceptor } from '@nestjs/platform-express'
 import { PostService } from './post.service'
 import { postDto } from './dto/post.dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
@@ -24,15 +25,17 @@ export class PostController {
 
   @HttpPost()
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file'))
-  async create(@Body() body: postDto, @UploadedFile() file: Express.Multer.File, @Req() req: AuthenticatedRequest) {
+  @UseInterceptors(FilesInterceptor('files'))
+  async create(@Body() body: postDto, @UploadedFiles() files: Express.Multer.File[], @Req() req: AuthenticatedRequest) {
     const userId = req.user.userId
     if (!userId) {
       throw new Error('User not found')
     }
+
     const bodyData = { ...body, userId }
-    return this.postService.create({ ...bodyData, file })
+    return this.postService.create(bodyData, files)
   }
+
   @UseGuards(JwtAuthGuard)
   @Get('get-all')
   async getAll(@Req() req: AuthenticatedRequest) {
@@ -61,23 +64,25 @@ export class PostController {
   }
   @UseGuards(JwtAuthGuard)
   @Put('update/:id')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files'))
   async update(
     @Req() req: AuthenticatedRequest,
     @Body() body: postDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Param('id') id: string
   ) {
     const userId = req.user.userId
     if (!userId) {
       throw new Error('User not found')
     }
-    const post = await this.postService.update(id, { ...body, file })
+
+    const post = await this.postService.update(id, { ...body, userId }, files)
     return {
       message: 'Post updated successfully',
       data: post
     }
   }
+
   @UseGuards(JwtAuthGuard)
   @Delete('delete/:id')
   async delete(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
