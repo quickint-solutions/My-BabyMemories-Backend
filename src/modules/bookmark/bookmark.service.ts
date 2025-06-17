@@ -2,13 +2,21 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model } from 'mongoose'
 import { Bookmark } from 'src/schema/bookmark.schema'
-import { CreateBookmarkDto, DeleteBookmarkDto, UpdateBookmarkDto } from './dto/create-bookmark.dto'
+import { CreateBookmarkDto } from './dto/create-bookmark.dto'
 
 @Injectable()
 export class BookmarkService {
   constructor(@InjectModel(Bookmark.name) private readonly bookmarkModel: Model<Bookmark>) {}
 
   async create(createBookmarkDto: CreateBookmarkDto) {
+    const { userId, postId } = createBookmarkDto
+
+    const existing = await this.bookmarkModel.findOne({ userId, postId, isDeleted: false })
+
+    if (existing) {
+      return existing
+    }
+
     const bookmark = await this.bookmarkModel.create(createBookmarkDto)
     return bookmark
   }
@@ -23,18 +31,14 @@ export class BookmarkService {
     return bookmarks
   }
 
-  async delete(id: string): Promise<{ message: string }> {
-    const deleted = await this.bookmarkModel
-      .findOne({ postId: id, isDeleted: false })
-      .populate('postId')
-      .populate('userId')
-      .lean()
+  async delete(userId: string, postId: string): Promise<{ message: string }> {
+    const bookmark = await this.bookmarkModel.findOne({ userId, postId, isDeleted: false })
 
-    if (!deleted) {
-      throw new NotFoundException(`Bookmark with id ${id} not found`)
+    if (!bookmark) {
+      throw new NotFoundException(`Bookmark not found for post ${postId} and user ${userId}`)
     }
 
-    await this.bookmarkModel.findByIdAndUpdate(deleted._id, { isDeleted: true })
+    await this.bookmarkModel.findByIdAndUpdate(bookmark._id, { isDeleted: true })
 
     return { message: 'Bookmark deleted successfully' }
   }

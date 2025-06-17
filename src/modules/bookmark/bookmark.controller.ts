@@ -7,6 +7,7 @@ import { AuthenticatedRequest } from 'src/types/express-request'
 @Controller('bookmark')
 export class BookmarkController {
   constructor(private readonly bookmarkService: BookmarkService) {}
+
   @UseGuards(JwtAuthGuard)
   @Get()
   async findAll(@Req() req: AuthenticatedRequest) {
@@ -22,9 +23,10 @@ export class BookmarkController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':id')
+  @Delete(':postId')
   @HttpCode(HttpStatus.OK)
-  async delete(@Param('id') id: string) {
-    return this.bookmarkService.delete(id)
+  async delete(@Param('postId') postId: string, @Req() req: AuthenticatedRequest) {
+    const userId = req.user.userId
+    return this.bookmarkService.delete(userId, postId)
   }
 }
