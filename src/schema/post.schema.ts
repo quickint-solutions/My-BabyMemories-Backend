@@ -20,6 +20,9 @@ export class Post extends Document {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: User
 
+  @Prop({ default: false })
+  isBookmarked: boolean
+
   @Prop({ required: false })
   description: string
 

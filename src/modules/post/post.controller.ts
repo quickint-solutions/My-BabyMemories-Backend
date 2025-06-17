@@ -11,7 +11,8 @@ import {
   Param,
   Delete,
   Put,
-  UploadedFiles
+  UploadedFiles,
+  Patch
 } from '@nestjs/common'
 import { FilesInterceptor } from '@nestjs/platform-express'
 import { PostService } from './post.service'
@@ -95,5 +96,12 @@ export class PostController {
       message: 'Post deleted successfully',
       data: post
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/bookmark')
+  async updateBookmarkStatus(@Param('id') id: string, @Body('isBookmarked') isBookmarked: boolean) {
+    const updatedPost = await this.postService.toggleBookmark(id, isBookmarked)
+    return { message: 'Bookmark status updated', post: updatedPost }
   }
 }

@@ -26,7 +26,6 @@ export class PostService {
           await minioClient.putObject(bucketName, filename, Readable.from(file.buffer), file.size, {
             'Content-Type': file.mimetype
           })
-          // const presignedUrl = await minioClient.presignedGetObject(bucketName, filename, 24 * 60 * 60)
 
           await this.mediaModel.create({
             type: file.mimetype.startsWith('video') ? MediaType.VIDEO : MediaType.IMAGE,
@@ -135,7 +134,6 @@ export class PostService {
 
     return post
   }
-
   async delete(id: string): Promise<deleteResponseDto> {
     const deleted = await this.postModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true })
     if (!deleted) {
@@ -151,5 +149,15 @@ export class PostService {
     return {
       message: 'Post deleted successfully'
     }
+  }
+
+  async toggleBookmark(postId: string, isBookmarked: boolean) {
+    const post = await this.postModel.findById(postId)
+    if (!post || post.isDeleted) {
+      throw new NotFoundException('Post not found')
+    }
+    post.isBookmarked = isBookmarked
+    await post.save()
+    return post
   }
 }
