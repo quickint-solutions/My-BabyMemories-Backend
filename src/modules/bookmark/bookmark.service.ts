@@ -14,18 +14,28 @@ export class BookmarkService {
   }
 
   async findAll(userId: string) {
-    const bookmarks = await this.bookmarkModel.find({ userId , isDeleted: false }).populate('postId').populate('userId').lean()
+    const bookmarks = await this.bookmarkModel
+      .find({ userId, isDeleted: false })
+      .populate('postId')
+      .populate('userId')
+      .lean()
 
     return bookmarks
   }
 
   async delete(id: string): Promise<{ message: string }> {
-    const deleted = await this.bookmarkModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true })
+    const deleted = await this.bookmarkModel
+      .findOne({ postId: id, isDeleted: false })
+      .populate('postId')
+      .populate('userId')
+      .lean()
 
     if (!deleted) {
-      throw new NotFoundException('Bookmark not found')
+      throw new NotFoundException(`Bookmark with id ${id} not found`)
     }
+
+    await this.bookmarkModel.findByIdAndUpdate(deleted._id, { isDeleted: true })
 
     return { message: 'Bookmark deleted successfully' }
   }
-}   
+}
