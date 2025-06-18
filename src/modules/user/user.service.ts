@@ -23,7 +23,7 @@ export class UserService {
 
     userDetails.profile = userProfile
 
-    return { userDetails }
+    return userDetails
   }
 
   async updateProfile(user: getProfileResponse, userProfile: updateProfile, file?: Express.Multer.File) {
