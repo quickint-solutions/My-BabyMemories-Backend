@@ -40,7 +40,7 @@ export class PostService {
     return post
   }
   async getAll(userId: string) {
-    const posts = await this.postModel.find({ userId, isDeleted: false }).populate('kidsId').populate('userId').lean()
+    const posts = await this.postModel.find({ userId, isDeleted: false }).populate('kidsId').populate('userId').sort({createdAt:-1}).lean()
 
     const postIds = posts.map(post => post._id)
     const mediaList = await this.mediaModel.find({ postId: { $in: postIds }, isDeleted: false }).lean()
