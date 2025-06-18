@@ -1,20 +1,34 @@
-import { Controller, Post, Body, Get, Param, Put, Delete, UseGuards, Req } from '@nestjs/common'
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  Put,
+  Delete,
+  UseGuards,
+  Req,
+  UseInterceptors,
+  UploadedFile
+} from '@nestjs/common'
 import { KidsService } from './kids.service'
 import { KidDto, UpdateKidDto } from './dto/create-kids.dto'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { AuthenticatedRequest } from 'src/types/express-request'
+import { FileInterceptor } from '@nestjs/platform-express'
 
 @Controller('kids')
 export class KidsController {
   constructor(private readonly kidsService: KidsService) {}
   @UseGuards(JwtAuthGuard)
   @Post('create')
-  async create(@Body() kidDto: KidDto, @Req() req: AuthenticatedRequest) {
+  @UseInterceptors(FileInterceptor('file'))
+  async create(@Body() kidDto: KidDto, @Req() req: AuthenticatedRequest, @UploadedFile() file: Express.Multer.File) {
     const data = {
       ...kidDto,
       userId: req.user.userId
     }
-    const kid = await this.kidsService.create(data)
+    const kid = await this.kidsService.create(data, file)
     return {
       message: 'Kid created successfully',
       data: kid
@@ -40,8 +54,9 @@ export class KidsController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() kidDto: UpdateKidDto) {
-    const updatedKid = await this.kidsService.update(id, kidDto)
+  @UseInterceptors(FileInterceptor('file'))
+  async update(@Param('id') id: string, @Body() kidDto: UpdateKidDto, @UploadedFile() file?: Express.Multer.File) {
+    const updatedKid = await this.kidsService.update(id, kidDto, file)
     return {
       message: 'Kid updated successfully',
       data: updatedKid

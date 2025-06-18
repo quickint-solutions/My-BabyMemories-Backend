@@ -24,6 +24,9 @@ export class Kids extends Document {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
   userId: User
 
+  @Prop()
+  profile:string
+
   @Prop({ default: false })
   isDeleted: boolean
 }

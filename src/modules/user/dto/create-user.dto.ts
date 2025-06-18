@@ -60,3 +60,9 @@ export class getProfileResponse{
   userId: string;
   email: string;
 }
+
+export class updateProfile{
+  firstName:string
+  lastName:string
+  email:string
+}

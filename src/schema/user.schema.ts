@@ -23,6 +23,9 @@ export class User extends Document {
 
   @Prop()
   providerId: string
+
+  @Prop()
+  profile: string
 }
 
 export const UserSchema = SchemaFactory.createForClass(User)

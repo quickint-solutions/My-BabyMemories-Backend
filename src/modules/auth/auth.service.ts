@@ -4,6 +4,9 @@ import { Model } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt'
 import * as nodemailer from 'nodemailer'
+import { v4 as uuid } from 'uuid'
+import { Readable } from 'stream'
+import * as mime from 'mime-types'
 
 import { CreateUserDto, ForgotPasswordDto, LoginDto, UpdatePasswordDto } from 'src/modules/user/dto/create-user.dto'
 import {
@@ -17,6 +20,7 @@ import {
 } from 'src/modules/auth/dto/auth.dto'
 import { IUser, IVerification } from 'src/modules/user/user.interface'
 import { INotification } from 'src/modules/notification/notification.interface'
+import { bucketName, minioClient } from 'src/utils/minio.client'
 
 @Injectable()
 export class AuthService {
@@ -27,7 +31,7 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  async signup(createUserDto: CreateUserDto): Promise<SignupResponseDto> {
+  async signup(createUserDto: CreateUserDto, file?: Express.Multer.File): Promise<SignupResponseDto> {
     const { email, password, firstName, lastName } = createUserDto
 
     const existingUser = await this.userModel.findOne({ email })
@@ -35,11 +39,24 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    let profileUrl = ''
+    if (file) {
+      const ext = mime.extension(file.mimetype) || 'bin'
+      const filename = `${uuid()}.${ext}`
+
+      await minioClient.putObject(bucketName, filename, Readable.from(file.buffer), file.size, {
+        'Content-Type': file.mimetype
+      })
+
+      profileUrl = filename
+    }
+
     const user = await this.userModel.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      profile: profileUrl
     })
 
     const findNotification = await this.notificationModel.findOne({ userId: user._id })
