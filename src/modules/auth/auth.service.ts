@@ -236,6 +236,8 @@ export class AuthService {
     const user = await this.userModel.findOne({ email: data.email })
     if (!user) throw new NotFoundException('User not found')
 
+    await this.verificationModel.deleteMany({ email: user.email })
+
     const verificationCode = await this.verificationModel.create({
       email: user.email,
       code: Math.floor(100000 + Math.random() * 900000).toString(),
