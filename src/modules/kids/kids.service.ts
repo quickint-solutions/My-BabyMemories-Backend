@@ -32,7 +32,7 @@ export class KidsService {
   }
 
   async findAll(userId: string): Promise<any[]> {
-    const kids = await this.kidsModel.find({ userId, isDeleted: false }).populate('userId')
+    const kids = await this.kidsModel.find({ userId, isDeleted: false }).populate('userId').sort({ createdAt: -1 })
 
     const result = await Promise.all(
       kids.map(async kid => {
