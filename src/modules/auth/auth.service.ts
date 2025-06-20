@@ -257,7 +257,7 @@ export class AuthService {
   }
 
   async resetPassword(data: IVerification & { new_password: string }): Promise<ResetPasswordResponseDto> {
-    const verification = await this.verificationModel.findOne({ email: data.email })
+    const verification = await this.verificationModel.findOne({ email: data.email, code: data.code })
     if (!verification) throw new NotFoundException('Verification entry not found')
     if (verification.expiryAt < Date.now()) throw new UnauthorizedException('Verification code expired')
     if (verification.code !== data.code) throw new UnauthorizedException('Invalid verification code')
@@ -283,5 +283,9 @@ export class AuthService {
         password: ''
       }
     }
+  }
+  async logoutFromAlldevice() {
+    const token = await this.generateToken(null)
+    return token
   }
 }
