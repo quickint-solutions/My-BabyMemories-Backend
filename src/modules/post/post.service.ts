@@ -119,22 +119,30 @@ export class PostService {
     }
   }
 
-  async update(id: string, postDto: updatePostDto, files?: Express.Multer.File[]): Promise<Post> {
+  async update(
+    id: string,
+    postDto: updatePostDto,
+    files?: Express.Multer.File[],
+    existingMedia: string[] = []
+  ): Promise<Post> {
     const post = await this.postModel.findByIdAndUpdate(id, postDto, { new: true })
     if (!post) {
       throw new NotFoundException('Post not found')
     }
 
+    const dbMedia = await this.mediaModel.find({ postId: id, isDeleted: false })
+
+    const mediaToDelete = dbMedia.filter(media => !existingMedia.includes(media.url))
+    Logger.log(mediaToDelete , "media to delete")
+
+    await Promise.all(
+      mediaToDelete.map(async media => {
+        await minioClient.removeObject(bucketName, media.url)
+        await this.mediaModel.findByIdAndUpdate(media._id, { isDeleted: true })
+      })
+    )
+
     if (files && files.length > 0) {
-      const existingMedia = await this.mediaModel.find({ postId: id, isDeleted: false })
-
-      await Promise.all(
-        existingMedia.map(async (media: Media) => {
-          await minioClient.removeObject(bucketName, media.url)
-          await this.mediaModel.findByIdAndUpdate(media._id, { isDeleted: true })
-        })
-      )
-
       await Promise.all(
         files.map(async file => {
           const ext = mime.extension(file.mimetype) || 'bin'
@@ -156,6 +164,7 @@ export class PostService {
 
     return post
   }
+
   async delete(id: string): Promise<deleteResponseDto> {
     const deleted = await this.postModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true })
     if (!deleted) {

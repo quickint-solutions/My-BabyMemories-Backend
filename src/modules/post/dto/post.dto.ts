@@ -16,6 +16,9 @@ export class postDto {
   @IsOptional()
   @IsNotEmpty()
   date: string
+
+  @IsOptional()
+  existingMedia
 }
 export class updatePostDto {
   @IsArray()

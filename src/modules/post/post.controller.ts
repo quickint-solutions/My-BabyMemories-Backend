@@ -76,8 +76,12 @@ export class PostController {
     if (!userId) {
       throw new Error('User not found')
     }
-
-    const post = await this.postService.update(id, { ...body, userId }, files)
+    const existingMedia: string[] = Array.isArray(body.existingMedia)
+      ? body.existingMedia
+      : body.existingMedia
+        ? [body.existingMedia]
+        : []
+    const post = await this.postService.update(id, { ...body, userId }, files, existingMedia)
     return {
       message: 'Post updated successfully',
       data: post
